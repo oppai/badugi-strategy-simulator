@@ -1,24 +1,24 @@
-# Report: Optimal Strategy vs "Keep Up to J" Strategy in Badugi
+# レポート: 「J以下を残す」戦略に対するBadugiの最適戦略
 
-## 1. Introduction
+## 1. はじめに
 
-This report analyzes the best counter-strategy against an opponent who consistently plays a "Keep Up to J (Jack, 11)" strategy across all draw rounds in random vs random hand Badugi simulations.
+本レポートは、Badugi（ランダムハンド対ランダムハンド）において、すべてのドローステップで常に「J（ジャック、11）以下を残す」戦略を取る対戦相手に対する最適なカウンター戦略を分析したものです。
 
-The opponent's strategy aims to keep any cards rank J or lower, building toward a Badugi, and discarding anything higher than a J.
+対戦相手の戦略は、J以下のランクのカードを残してBadugiを完成させることを目指し、Jより大きいカードをすべて捨てるというものです。
 
-## 2. Methodology
+## 2. 分析手法
 
-We conducted a series of simulations (100,000 iterations per configuration) testing various `r1Target`, `r2Target`, and `r3Target` combinations for Player 1, while Player 2's strategy was fixed at `[11, 11, 11]`.
+Player 2の戦略を `[11, 11, 11]` に固定し、Player 1の `r1Target`、`r2Target`、`r3Target` の様々な組み合わせについて、それぞれ10万回のシミュレーションを実行しました。
 
-The base assumption for our test is to try keeping a tighter range early on and potentially widening it in later rounds. The simulation results measure win percentage.
+テストの基本的な仮説として、序盤はタイトなレンジ（強いハンド）を残し、後半のラウンドで徐々にレンジを広げる（妥協する）戦略が有効である可能性を検証しました。シミュレーション結果は勝率で評価しています。
 
-## 3. Results
+## 3. 結果
 
-Here are the results for different P1 strategies vs P2 [11, 11, 11]:
+以下は、Player 2の戦略 `[11, 11, 11]` に対する、Player 1の各種戦略のシミュレーション結果です：
 
-| P1 Strategy (Round 1, 2, 3 Target Rank) | P1 Win Rate | P2 Win Rate | Tie Rate |
+| P1 戦略 (ラウンド1, 2, 3 のターゲットランク) | P1 勝率 | P2 勝率 | 引き分け率 |
 | :--- | :--- | :--- | :--- |
-| `[11, 11, 11]` (Mirror) | ~49.8% | ~49.8% | ~0.4% |
+| `[11, 11, 11]` (ミラー) | ~49.8% | ~49.8% | ~0.4% |
 | `[10, 10, 10]` | 50.36% | 49.45% | 0.19% |
 | `[9, 9, 9]` | 50.74% | 49.06% | 0.20% |
 | `[8, 8, 8]` | 50.02% | 49.73% | 0.24% |
@@ -31,15 +31,15 @@ Here are the results for different P1 strategies vs P2 [11, 11, 11]:
 | `[8, 10, 12]` | 50.26% | 49.53% | 0.21% |
 | `[8, 10, 13]` | 50.29% | 49.51% | 0.20% |
 
-## 4. Analysis and Conclusion
+## 4. 分析と結論
 
-From the data, playing a slightly tighter fixed strategy of **`[9, 9, 9]`** yields the highest win rate at **50.74%**.
+データから明らかなように、全てのラウンドで固定の少しタイトな戦略 **`[9, 9, 9]`** をプレイした時、勝率が **50.74%** と最も高くなりました。
 
-Why is this the case?
+なぜこのような結果になるのでしょうか？
 
-1. **Exploiting Looseness:** By keeping up to J, the opponent is satisfied with weaker 3-card and 4-card hands. By targeting 9 or lower, we ensure that when both players hit their target hands, our hand is significantly likely to out-rank theirs.
-2. **Not Too Tight:** When targeting `[8, 8, 8]`, our win rate drops to `50.02%`, and targeting `[7, 7, 7]` is actively losing (`48.49%`). Being too tight means we discard too many playable cards, frequently missing our draws entirely while the opponent manages to piece together a ragged J-high or T-high Badugi that scoops the pot.
-3. **Adaptive (Dynamic) Strategies vs Static:** We tested ramping strategies like `[8, 9, 10]`, which performed well (`50.44%`), but still underperformed the static `[9, 9, 9]` approach. The straightforward `[9, 9, 9]` gives a good balance between draw hit rate and hand strength value against a player who is willing to keep up to a Jack.
+1. **ルースさの搾取:** 対戦相手はJまでを残すため、比較的弱い3カードや4カードのハンドで妥協しがちです。こちらがターゲットを9以下に設定することで、お互いがターゲットハンドを完成させた際、こちらのハンドが相手のランクを上回る確率が有意に高くなります。
+2. **タイトすぎないこと:** ターゲットを `[8, 8, 8]` にすると勝率は `50.02%` に下がり、`[7, 7, 7]` では負け越し (`48.49%`) てしまいます。タイトすぎるということは、プレイ可能なカードを多く捨てすぎてしまい、ドローを全く引けないことが多くなる一方で、相手はボロボロのJハイやTハイのBadugiを完成させてポットをさらっていく結果になります。
+3. **適応型（動的）戦略と静的戦略の比較:** `[8, 9, 10]` のようにラウンドを追うごとに妥協していく戦略もテストし、良好な結果 (`50.44%`) を得ましたが、依然として静的な `[9, 9, 9]` には及びませんでした。シンプルな `[9, 9, 9]` は、Jまでを残すルースなプレイヤーに対して、ドローの成功確率とハンドの強さの価値のバランスが最も優れています。
 
-**Optimal Counter Strategy:**
-Target rank 9 across all draw rounds (`[9, 9, 9]`). This allows for an edge of roughly +1.7% in win probability over the opponent's loose J-high strategy.
+**最適なカウンター戦略:**
+すべてのドローラウンドでターゲットランクを9にする（`[9, 9, 9]`）。これにより、相手のルースなJハイ戦略に対して、勝率で約+1.7%のアドバンテージ（優位性）を得ることができます。
