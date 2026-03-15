@@ -30,32 +30,7 @@ export function evaluateStrategy(strategy: Strategy, cards: Card[], drawRound: n
     const validSubsetsForTarget = getAllValidHands(cardsUnderTarget);
     if (validSubsetsForTarget.length > 0) {
       // 一番サイズが大きく、かつ一番数字が小さい(強い)サブセット
-      let bestChoice = validSubsetsForTarget[0].cards;
-
-      // 特別ルール: 3rdチェンジで、ターゲットに満たなくても
-      // 元の手札の中に"A2Tx (Tを含む3Tri)" のような強い3枚があればそちらを優先する。
-      if (drawRound === 3) {
-        const allValid = getAllValidHands(cards);
-        const bestOverallHand = allValid[0];
-        if (bestOverallHand.size === 3 && bestOverallHand.ranks[0] === 10) {
-           if (bestOverallHand.size > bestChoice.length) {
-             bestChoice = bestOverallHand.cards;
-           }
-        }
-      }
-
-      return bestChoice;
-    }
-  }
-
-  // 特別ルール: ターゲット以下のカードが全くない場合でも3rdチェンジの特別ルールは適用
-  if (drawRound === 3) {
-    const allValid = getAllValidHands(cards);
-    if (allValid.length > 0) {
-      const bestOverallHand = allValid[0];
-      if (bestOverallHand.size === 3 && bestOverallHand.ranks[0] === 10) {
-        return bestOverallHand.cards;
-      }
+      return validSubsetsForTarget[0].cards;
     }
   }
 
