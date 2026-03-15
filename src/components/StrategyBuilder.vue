@@ -65,7 +65,6 @@ const ranks = [
         <ul>
           <li><strong>Badugi完成時</strong>は常にキープ(Stand Pat)。</li>
           <li>ターゲット以下の<strong>最強ハンド</strong>を残す(他はチェンジ)。1枚もなければ全チェンジ。</li>
-          <li><small>※3rdチェンジのみ、特例で<strong>A2T等(T以下の3Tri)</strong>があればキープします。</small></li>
         </ul>
       </div>
     </div>
