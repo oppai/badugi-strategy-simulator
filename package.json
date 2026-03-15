@@ -8,9 +8,11 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "cli": "tsx src/cli/index.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "mcp": "tsx src/mcp/index.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "vue": "^3.5.30"
   },
   "devDependencies": {
