@@ -1,0 +1,6 @@
+{
+  "p1": { "r1Target": 5, "r2Target": 7, "r3Target": 10 },
+  "p2": { "r1Target": 7, "r2Target": 7, "r3Target": 7 },
+  "p1Start": "As,2h,3d,Ac",
+  "p2Start": "Kh,Qh,Jh,2c"
+}
