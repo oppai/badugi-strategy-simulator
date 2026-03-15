@@ -4,27 +4,23 @@ import type { Strategy } from './core/strategy';
 import { simulate } from './core/simulator';
 import type { SimulationResult } from './core/simulator';
 import { Card } from './core/card';
-
-// ... (Strategy refs abbreviated, replace only the import and result ref lines)
-
-
 import StrategyBuilder from './components/StrategyBuilder.vue';
 
 // Initial default strategies
 const p1Strategy = ref<Strategy>({
-  r1Target: 5,
-  r2Target: 7,
-  r3Target: 10
-});
-
-const p2Strategy = ref<Strategy>({
   r1Target: 7,
   r2Target: 7,
   r3Target: 7
 });
 
-const p1Start = ref('Ac,2h,3d,4s'); // default start hand
-const p2Start = ref('');           // random hands
+const p2Strategy = ref<Strategy>({
+  r1Target: 11,
+  r2Target: 11,
+  r3Target: 11
+});
+
+const p1Start = ref(''); // random hands
+const p2Start = ref(''); // random hands
 
 const isCalculating = ref(false);
 const result = ref<(SimulationResult & { duration: number, p1Pct: string, p2Pct: string, tiePct: string }) | null>(null);
@@ -71,6 +67,10 @@ async function runSimulation() {
         <span class="icon">♠️</span> Badugi Equity Calculator
       </div>
       <p class="subtitle">特定の戦術同士の勝率をモンテカルロシミュレーションで計算します</p>
+      
+      <div class="ai-warning">
+        ⚠️ <strong>注意:</strong> このシミュレーターはAIによって生成されたものであり、ロジックの完全な精査は行われていません。計算結果が正確でない可能性があります。
+      </div>
     </header>
 
     <main class="main-content">
@@ -194,6 +194,19 @@ async function runSimulation() {
 .subtitle {
   color: var(--text-muted);
   font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+.ai-warning {
+  display: inline-block;
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fda4af;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  max-width: 90%;
+  margin: 0 auto;
 }
 
 .split-view {
@@ -295,6 +308,8 @@ async function runSimulation() {
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(100, 255, 218, 0.3);
   transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 400px;
 }
 
 .btn-simulate:hover:not(:disabled) {
@@ -468,16 +483,61 @@ async function runSimulation() {
 }
 
 @media (max-width: 768px) {
+  .app-container {
+    padding: 20px 10px;
+  }
+  
+  .logo {
+    font-size: 1.8rem;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+  
   .split-view, .distribution-section {
     flex-direction: column;
+    gap: 12px;
   }
+
   .vs-divider {
     width: 100%;
-    margin: 10px 0;
+    margin: 5px 0;
   }
+  
+  .vs-divider span {
+    padding: 6px 14px;
+  }
+
   .stats-row {
     flex-direction: column;
     align-items: center;
+    gap: 12px;
+  }
+  
+  .stat-card {
+    max-width: none;
+    width: 100%;
+    padding: 15px;
+  }
+
+  .dist-panel {
+    padding: 15px;
+  }
+
+  .result-section {
+    padding: 20px 15px;
+  }
+
+  .dist-name {
+    width: 100px;
+    font-size: 0.8rem;
+  }
+  
+  .dist-value {
+    font-size: 0.85rem;
   }
 }
 </style>

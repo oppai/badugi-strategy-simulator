@@ -44,7 +44,6 @@ const ranks = [
       <select v-model.number="strategy.r1Target">
         <option v-for="r in ranks" :key="r.value" :value="r.value">{{ r.label }}</option>
       </select>
-      <span class="desc">以下のカードで構成される役をキープ</span>
     </div>
 
     <div class="form-group row">
@@ -63,9 +62,11 @@ const ranks = [
     
     <div class="fallback-rule">
       <div class="rule-body">
-        <strong>Badugi(4枚)</strong> が完成している場合は常にそのまま(Stand Pat)キープします。<br/>
-        各ラウンドでは、指定されたランク以下の「色がバラバラの最強ハンド」を残します。指定ランク以下のカードが1枚もない場合は全チェンジします。<br/>
-        <small>※3rdチェンジではA2Txなど(TやT以下の3Tri)がある場合、特別にそれをキープして1枚チェンジします。</small>
+        <ul>
+          <li><strong>Badugi完成時</strong>は常にキープ(Stand Pat)。</li>
+          <li>ターゲット以下の<strong>最強ハンド</strong>を残す(他はチェンジ)。1枚もなければ全チェンジ。</li>
+          <li><small>※3rdチェンジのみ、特例で<strong>A2T等(T以下の3Tri)</strong>があればキープします。</small></li>
+        </ul>
       </div>
     </div>
   </div>
@@ -106,12 +107,7 @@ const ranks = [
 .row label {
   color: #94a3b8;
   font-weight: 500;
-  width: 130px;
-}
-
-.desc {
-  font-size: 0.8rem;
-  color: #64748b;
+  width: 140px;
 }
 
 select {
@@ -134,12 +130,25 @@ select:focus {
 
 .fallback-rule {
   margin-top: 24px;
-  padding: 12px;
+  padding: 12px 12px 12px 24px;
   background: rgba(14, 165, 233, 0.1);
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #cbd5e1;
   border-left: 3px solid #0ea5e9;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+.fallback-rule ul {
+  margin: 0;
+  padding-left: 0;
+}
+
+.fallback-rule li {
+  margin-bottom: 4px;
+}
+
+.fallback-rule li:last-child {
+  margin-bottom: 0;
 }
 </style>
