@@ -60,7 +60,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     );
   }
 
-  const { strategyJson, iterations } = request.params.arguments as any;
+  const args = (request.params.arguments || {}) as Record<string, unknown>;
+  const strategyJson = args.strategyJson;
+  const iterations = args.iterations;
 
   if (typeof strategyJson !== 'string') {
     throw new McpError(ErrorCode.InvalidParams, 'strategyJson must be a string');
@@ -70,12 +72,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   writeFileSync(tmpFile, strategyJson, 'utf8');
 
   try {
-    const cmdArgs = [tmpFile];
-    if (iterations !== undefined) {
-      cmdArgs.push(iterations.toString());
-    }
-
-    const { stdout, stderr } = await execAsync(`npx tsx src/cli/index.ts ${cmdArgs.join(' ')}`);
+    const iterArg = iterations !== undefined ? ` ${iterations}` : '';
+    const { stdout, stderr } = await execAsync(`npx tsx src/cli/index.ts "${tmpFile}"${iterArg}`);
 
     return {
       content: [
@@ -85,12 +83,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         },
       ],
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message: string, stdout?: string, stderr?: string };
     return {
       content: [
         {
           type: 'text',
-          text: `Error executing simulation: ${error.message}\n\nSTDOUT:\n${error.stdout}\n\nSTDERR:\n${error.stderr}`,
+          text: `Error executing simulation: ${err.message}\n\nSTDOUT:\n${err.stdout ?? ''}\n\nSTDERR:\n${err.stderr ?? ''}`,
         },
       ],
       isError: true,
