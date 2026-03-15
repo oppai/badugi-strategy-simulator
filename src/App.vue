@@ -459,14 +459,6 @@ async function runSimulation() {
   background: #94a3b8;
 }
 
-.p2-dist .bar-fill.win {
-  background: #f43f5e;
-}
-
-.p2-dist .bar-fill.lose {
-  background: #0ea5e9;
-}
-
 .dist-value {
   width: 90px;
   text-align: right;
