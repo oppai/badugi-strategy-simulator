@@ -21,10 +21,7 @@ for (let i = 0; i < cards.length - 3; i++) {
 }
 
 // Sort all hands from best to worst.
-// compare: Returns >0 if this beats other, <0 if other beats this, 0 if tie.
 allHands.sort((a, b) => b.best.compare(a.best));
-
-// Now allHands is sorted from Best (e.g. 4-card 432A) to Worst (e.g. 1-card K).
 
 function rankToString(r: number) {
   if (r === 1) return 'A';
@@ -38,6 +35,7 @@ function rankToString(r: number) {
 function generateCategoryStats(name: string, size: number) {
   const categoryHands = allHands.filter(h => h.best.size === size);
   const total = categoryHands.length;
+  const globalTotal = allHands.length;
 
   const histogram: Record<number, number> = {};
   let sumHighest = 0;
@@ -54,22 +52,26 @@ function generateCategoryStats(name: string, size: number) {
   const medianHand = categoryHands[Math.floor(total / 2)];
   const medianHighest = medianHand.best.ranks[0];
 
-  let md = `## ${name} (総数: ${total} / 割合: ${(total / allHands.length * 100).toFixed(2)}%)\n\n`;
+  let md = `## ${name} (総数: ${total} / 割合: ${(total / globalTotal * 100).toFixed(2)}%)\n\n`;
   md += `- **最も高いカード(Highest Card)の平均値**: ${meanHighest.toFixed(2)}\n`;
   md += `- **最も高いカード(Highest Card)の中央値**: ${rankToString(medianHighest)}\n\n`;
 
-  md += `| Highest Card | 組み合わせ数 | 確率 | 累積確率 (良い方から) |\n`;
-  md += `|---|---|---|---|\n`;
+  md += `| Highest Card | 組み合わせ数 | 確率 (種別内) | 累積確率 (種別内) | 全体に対する割合 | 全体に対する累積割合 |\n`;
+  md += `|---|---|---|---|---|---|\n`;
 
   const sortedRanks = Object.keys(histogram).map(Number).sort((a, b) => a - b);
   let cumulative = 0;
 
   for (const r of sortedRanks) {
     const count = histogram[r];
-    const prob = count / total * 100;
+    const probInner = count / total * 100;
     cumulative += count;
-    const cumProb = cumulative / total * 100;
-    md += `| ${rankToString(r)} | ${count} | ${prob.toFixed(2)}% | ${cumProb.toFixed(2)}% |\n`;
+    const cumProbInner = cumulative / total * 100;
+
+    const probGlobal = count / globalTotal * 100;
+    const cumProbGlobal = cumulative / globalTotal * 100;
+
+    md += `| ${rankToString(r)} | ${count} | ${probInner.toFixed(2)}% | ${cumProbInner.toFixed(2)}% | ${probGlobal.toFixed(2)}% | ${cumProbGlobal.toFixed(2)}% |\n`;
   }
 
   md += `\n`;
@@ -80,7 +82,6 @@ let report = `# Initial Hand Histogram Report\n\n`;
 
 report += `初手4枚が配られた時のハンドの強さに関する分布レポートです。全組み合わせ数は 270,725 通りです。\n\n`;
 
-// Overall median
 const globalMedianHand = allHands[Math.floor(allHands.length / 2)];
 report += `## 全体統計\n\n`;
 report += `- **全体の中央値ハンド**: ${globalMedianHand.best.toString()} (上位50%の境界)\n`;
