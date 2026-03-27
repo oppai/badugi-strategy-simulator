@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { simulate } from '../src/core/simulator';
 import { Card } from '../src/core/card';
 import type { Strategy } from '../src/core/strategy';
+import { Deck } from '../src/core/deck';
 
 const dummyStrategy: Strategy = { r1Target: 7, r2Target: 7, r3Target: 7 };
 
@@ -38,5 +39,42 @@ describe('Simulator Validation', () => {
     const deadCards = [Card.fromString('3s'), Card.fromString('4d')];
     expect(() => simulate(dummyStrategy, dummyStrategy, p1Start, p2Start, deadCards, 1))
       .not.toThrow();
+  });
+
+  it('never draws the same card twice during a single game (draw phases)', () => {
+    // A strategy that forces maximum discards
+    const discardAllStrategy: Strategy = { r1Target: 0, r2Target: 0, r3Target: 0 };
+
+    let drawnCards = new Set<string>();
+    let hasDuplicates = false;
+
+    const shuffleSpy = vi.spyOn(Deck.prototype, 'shuffle').mockImplementation(function(this: Deck) {
+      drawnCards.clear();
+      // Original logic for shuffle
+      for (let i = this.cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+      }
+    });
+
+    const drawSpy = vi.spyOn(Deck.prototype, 'draw').mockImplementation(function(this: Deck) {
+      const card = this.cards.pop();
+      if (!card) throw new Error("Deck is empty");
+
+      const cardStr = card.toString();
+      if (drawnCards.has(cardStr)) {
+        hasDuplicates = true;
+      }
+      drawnCards.add(cardStr);
+      return card;
+    });
+
+    try {
+      simulate(discardAllStrategy, discardAllStrategy, null, null, null, 100);
+      expect(hasDuplicates).toBe(false);
+    } finally {
+      shuffleSpy.mockRestore();
+      drawSpy.mockRestore();
+    }
   });
 });
