@@ -4,6 +4,7 @@ import type { Strategy } from './core/strategy';
 import { simulate } from './core/simulator';
 import type { SimulationResult } from './core/simulator';
 import { Card } from './core/card';
+import { Deck } from './core/deck';
 import StrategyBuilder from './components/StrategyBuilder.vue';
 
 // Initial default strategies
@@ -21,6 +22,7 @@ const p2Strategy = ref<Strategy>({
 
 const p1Start = ref(''); // random hands
 const p2Start = ref(''); // random hands
+const deadCardsInput = ref(''); // discarded/dead cards
 
 const isCalculating = ref(false);
 const result = ref<(SimulationResult & { duration: number, p1Pct: string, p2Pct: string, tiePct: string }) | null>(null);
@@ -34,6 +36,28 @@ function parseCards(str: string): Card[] | null {
   }
 }
 
+function generateRandomHand(avoidStr1: string, avoidStr2: string): string {
+  const c1 = parseCards(avoidStr1) || [];
+  const c2 = parseCards(avoidStr2) || [];
+  const deck = new Deck();
+  deck.shuffle();
+  deck.removeCards([...c1, ...c2]);
+
+  const hand: Card[] = [];
+  for (let i = 0; i < 4; i++) {
+    hand.push(deck.draw());
+  }
+  return hand.map(c => c.toString()).join(',');
+}
+
+function setRandomP1() {
+  p1Start.value = generateRandomHand(p2Start.value, deadCardsInput.value);
+}
+
+function setRandomP2() {
+  p2Start.value = generateRandomHand(p1Start.value, deadCardsInput.value);
+}
+
 async function runSimulation() {
   isCalculating.value = true;
   result.value = null;
@@ -42,20 +66,25 @@ async function runSimulation() {
   setTimeout(() => {
     const c1 = parseCards(p1Start.value);
     const c2 = parseCards(p2Start.value);
+    const deadCards = parseCards(deadCardsInput.value);
     
-    const start = Date.now();
-    const simResult = simulate(p1Strategy.value, p2Strategy.value, c1, c2, 50000);
-    const duration = Date.now() - start;
-    
-    result.value = {
-      ...simResult,
-      duration,
-      p1Pct: ((simResult.p1Wins / simResult.total) * 100).toFixed(2),
-      p2Pct: ((simResult.p2Wins / simResult.total) * 100).toFixed(2),
-      tiePct: ((simResult.ties / simResult.total) * 100).toFixed(2),
-    };
-    
-    isCalculating.value = false;
+    try {
+      const start = Date.now();
+      const simResult = simulate(p1Strategy.value, p2Strategy.value, c1, c2, deadCards, 50000);
+      const duration = Date.now() - start;
+
+      result.value = {
+        ...simResult,
+        duration,
+        p1Pct: ((simResult.p1Wins / simResult.total) * 100).toFixed(2),
+        p2Pct: ((simResult.p2Wins / simResult.total) * 100).toFixed(2),
+        tiePct: ((simResult.ties / simResult.total) * 100).toFixed(2),
+      };
+    } catch (e: any) {
+      alert(e.message || "An error occurred during calculation.");
+    } finally {
+      isCalculating.value = false;
+    }
   }, 50);
 }
 </script>
@@ -82,7 +111,10 @@ async function runSimulation() {
           </div>
           <div class="range-input">
             <label>初期手札 (カンマ区切り、空でランダム):</label>
-            <input v-model="p1Start" placeholder="e.g. As,2h,3d,4c" />
+            <div class="input-with-button">
+              <input v-model="p1Start" placeholder="e.g. As,2h,3d,4c" />
+              <button class="btn-random" @click="setRandomP1" title="ランダムな4枚を設定">ランダム</button>
+            </div>
           </div>
           <StrategyBuilder v-model="p1Strategy" title="P1 Strategy" />
         </div>
@@ -99,9 +131,19 @@ async function runSimulation() {
           </div>
           <div class="range-input">
             <label>初期手札 (カンマ区切り、空でランダム):</label>
-            <input v-model="p2Start" placeholder="e.g. Kh,Qd,Jc" />
+            <div class="input-with-button">
+              <input v-model="p2Start" placeholder="e.g. Kh,Qd,Jc" />
+              <button class="btn-random" @click="setRandomP2" title="ランダムな4枚を設定">ランダム</button>
+            </div>
           </div>
           <StrategyBuilder v-model="p2Strategy" title="P2 Strategy" />
+        </div>
+      </div>
+
+      <div class="shared-panel">
+        <div class="range-input">
+          <label>ディスカード・除外するカード (カンマ区切り、空でなし):</label>
+          <input v-model="deadCardsInput" placeholder="e.g. 2s,3c" />
         </div>
       </div>
 
@@ -213,8 +255,13 @@ async function runSimulation() {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   position: relative;
+}
+
+.shared-panel {
+  max-width: 600px;
+  margin: 0 auto 40px;
 }
 
 .player-panel {
@@ -290,6 +337,28 @@ async function runSimulation() {
 .range-input input:focus {
   outline: none;
   border-color: var(--primary);
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-random {
+  background: rgba(14, 165, 233, 0.2);
+  color: #0ea5e9;
+  border: 1px solid rgba(14, 165, 233, 0.5);
+  border-radius: 6px;
+  padding: 0 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-random:hover {
+  background: rgba(14, 165, 233, 0.4);
+  color: #fff;
 }
 
 .action-section {

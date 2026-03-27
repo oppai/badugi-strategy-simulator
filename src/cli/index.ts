@@ -17,7 +17,8 @@ function main() {
   "p1": { "rules": [...] },
   "p2": { "rules": [...] },
   "p1Start": "As,2h,3d,4c", // optional
-  "p2Start": "Kh,Qh,Jh"     // optional
+  "p2Start": "Kh,Qh,Jh",    // optional
+  "deadCards": "2s,3c"      // optional
 }`);
     process.exit(1);
   }
@@ -39,15 +40,17 @@ function main() {
 
   const p1Start = config.p1Start ? parseCards(config.p1Start) : null;
   const p2Start = config.p2Start ? parseCards(config.p2Start) : null;
+  const deadCards = config.deadCards ? parseCards(config.deadCards) : null;
 
   console.log('Running simulation...');
   console.log(`Iterations: ${iterations}`);
   console.log(`P1 Start: ${p1Start ? p1Start.map(c => c.toString()).join(',') : 'Random'}`);
   console.log(`P2 Start: ${p2Start ? p2Start.map(c => c.toString()).join(',') : 'Random'}`);
+  console.log(`Dead Cards: ${deadCards ? deadCards.map(c => c.toString()).join(',') : 'None'}`);
   console.log('------------------------------');
 
   const start = Date.now();
-  const result = simulate(p1Strategy, p2Strategy, p1Start, p2Start, iterations);
+  const result = simulate(p1Strategy, p2Strategy, p1Start, p2Start, deadCards, iterations);
   const duration = Date.now() - start;
 
   const p1WinPct = ((result.p1Wins / result.total) * 100).toFixed(2);
