@@ -21,6 +21,7 @@ const p2Strategy = ref<Strategy>({
 
 const p1Start = ref(''); // random hands
 const p2Start = ref(''); // random hands
+const deadCardsInput = ref(''); // discarded/dead cards
 
 const isCalculating = ref(false);
 const result = ref<(SimulationResult & { duration: number, p1Pct: string, p2Pct: string, tiePct: string }) | null>(null);
@@ -42,20 +43,25 @@ async function runSimulation() {
   setTimeout(() => {
     const c1 = parseCards(p1Start.value);
     const c2 = parseCards(p2Start.value);
+    const deadCards = parseCards(deadCardsInput.value);
     
-    const start = Date.now();
-    const simResult = simulate(p1Strategy.value, p2Strategy.value, c1, c2, 50000);
-    const duration = Date.now() - start;
-    
-    result.value = {
-      ...simResult,
-      duration,
-      p1Pct: ((simResult.p1Wins / simResult.total) * 100).toFixed(2),
-      p2Pct: ((simResult.p2Wins / simResult.total) * 100).toFixed(2),
-      tiePct: ((simResult.ties / simResult.total) * 100).toFixed(2),
-    };
-    
-    isCalculating.value = false;
+    try {
+      const start = Date.now();
+      const simResult = simulate(p1Strategy.value, p2Strategy.value, c1, c2, deadCards, 50000);
+      const duration = Date.now() - start;
+
+      result.value = {
+        ...simResult,
+        duration,
+        p1Pct: ((simResult.p1Wins / simResult.total) * 100).toFixed(2),
+        p2Pct: ((simResult.p2Wins / simResult.total) * 100).toFixed(2),
+        tiePct: ((simResult.ties / simResult.total) * 100).toFixed(2),
+      };
+    } catch (e: any) {
+      alert(e.message || "An error occurred during calculation.");
+    } finally {
+      isCalculating.value = false;
+    }
   }, 50);
 }
 </script>
@@ -102,6 +108,13 @@ async function runSimulation() {
             <input v-model="p2Start" placeholder="e.g. Kh,Qd,Jc" />
           </div>
           <StrategyBuilder v-model="p2Strategy" title="P2 Strategy" />
+        </div>
+      </div>
+
+      <div class="shared-panel">
+        <div class="range-input">
+          <label>ディスカード・除外するカード (カンマ区切り、空でなし):</label>
+          <input v-model="deadCardsInput" placeholder="e.g. 2s,3c" />
         </div>
       </div>
 
@@ -213,8 +226,13 @@ async function runSimulation() {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   position: relative;
+}
+
+.shared-panel {
+  max-width: 600px;
+  margin: 0 auto 40px;
 }
 
 .player-panel {

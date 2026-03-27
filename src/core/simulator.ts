@@ -28,8 +28,25 @@ export function simulate(
   p2Strategy: Strategy,
   p1Start: Card[] | null,
   p2Start: Card[] | null,
+  deadCards: Card[] | null,
   iterations: number
 ): SimulationResult {
+  // Validate initial hands and dead cards to prevent duplicates
+  const allInitialCards: string[] = [];
+  if (p1Start) {
+    p1Start.forEach(c => allInitialCards.push(c.toString()));
+  }
+  if (p2Start) {
+    p2Start.forEach(c => allInitialCards.push(c.toString()));
+  }
+  if (deadCards) {
+    deadCards.forEach(c => allInitialCards.push(c.toString()));
+  }
+  const uniqueCards = new Set(allInitialCards);
+  if (uniqueCards.size !== allInitialCards.length) {
+    throw new Error('Duplicate cards found in initial hands or dead cards');
+  }
+
   let p1Wins = 0;
   let p2Wins = 0;
   let ties = 0;
@@ -40,6 +57,10 @@ export function simulate(
   for (let i = 0; i < iterations; i++) {
     const deck = new Deck();
     deck.shuffle();
+
+    if (deadCards) {
+      deck.removeCards(deadCards);
+    }
 
     let p1Hand: Card[] = [];
     let p2Hand: Card[] = [];
